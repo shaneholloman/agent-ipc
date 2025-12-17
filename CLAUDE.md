@@ -44,16 +44,16 @@ Project-specific instructions for Claude instances working on this codebase.
 
 After completing the startup sequence, display this announcement:
 
-```
+```md
 AGENT IPC SESSION INITIALIZED
 
-| Property | Value |
-|----------|-------|
-| Session | <tmux_session> |
-| Role | <Developer/Tester> |
+| Property   | Value                   |
+| ---------- | ----------------------- |
+| Session    | <tmux_session>          |
+| Role       | <Developer/Tester>      |
 | Descriptor | <three-word-descriptor> |
-| IPC Mode | Active |
-| Log File | logs/<descriptor>.jsonl |
+| IPC Mode   | Active                  |
+| Log File   | logs/<descriptor>.jsonl |
 
 This is a multi-agent peer programming session. Other agents may join:
 - Developer (claude-dev): Implements features, drives development
@@ -77,13 +77,13 @@ This is an inter-process communication library for Claude Code sessions running 
 
 ## Key Documentation
 
-| File | Purpose |
-|------|---------|
-| `prompts/protocol.md` | Communication protocol between agents |
-| `prompts/developer.md` | Developer role responsibilities |
-| `prompts/tester.md` | Tester role responsibilities |
-| `docs/patterns.md` | IPC patterns and discoveries |
-| `docs/tmux-aliases.md` | Shell alias definitions |
+| File                   | Purpose                               |
+| ---------------------- | ------------------------------------- |
+| `prompts/protocol.md`  | Communication protocol between agents |
+| `prompts/developer.md` | Developer role responsibilities       |
+| `prompts/tester.md`    | Tester role responsibilities          |
+| `docs/patterns.md`     | IPC patterns and discoveries          |
+| `docs/tmux-aliases.md` | Shell alias definitions               |
 
 ## IPC Session Detection
 
@@ -105,16 +105,16 @@ Session naming convention:
 
 This project uses tmux aliases defined in `docs/tmux-aliases.md`. Users must install these to their shell profile.
 
-| Alias | Command |
-|-------|---------|
-| `cs` | Start human session (claude-N) |
-| `csd` | Start IPC Developer session (claude-dev) |
-| `cst` | Start IPC Tester session (claude-tester) |
-| `csk <name>` | Kill a specific session |
-| `csl` | List all Claude sessions |
-| `csa` | Attach to session |
-| `cso` | Kill others, keep current |
-| `csx` | Exterminate ALL sessions |
+| Alias        | Command                                  |
+| ------------ | ---------------------------------------- |
+| `cs`         | Start human session (claude-N)           |
+| `csd`        | Start IPC Developer session (claude-dev) |
+| `cst`        | Start IPC Tester session (claude-tester) |
+| `csk <name>` | Kill a specific session                  |
+| `csl`        | List all Claude sessions                 |
+| `csa`        | Attach to session                        |
+| `cso`        | Kill others, keep current                |
+| `csx`        | Exterminate ALL sessions                 |
 
 ### Shane's Setup
 
@@ -135,7 +135,7 @@ pnpm run cli <cmd>    # Run CLI commands
 
 All structured IPC messages follow:
 
-```
+```log
 [PROTOCOL:<TYPE>] from <session> at <timestamp>
 <content>
 ```
@@ -176,6 +176,10 @@ This two-stage flow ensures:
 - User immediately sees confirmation that IPC mode is active
 - Role identity persists across context compaction
 - No manual configuration required
+
+## Developer Reminder
+
+The class rule: use classes when you need to encapsulate state, use functions when you're just transforming data. The codebase follows this correctly.
 
 ## Critical Reminders
 

@@ -1,30 +1,35 @@
 export {
-  ClaudeIPC,
-  type Message,
-  type SendResult,
-  type WaitOptions,
-  type IPCOptions,
-  type ProtocolMessageType,
-  type ProtocolMessage,
-  type CompactionNotice,
-  type StatusUpdate,
-  type TaskHandoff,
-  type ErrorNotice,
-  type Heartbeat,
+	ClaudeIPC,
+	type CompactionNotice,
+	type ErrorNotice,
+	type Heartbeat,
+	type IPCOptions,
+	type Message,
+	type ProtocolMessage,
+	type ProtocolMessageType,
+	type SendResult,
+	type StatusUpdate,
+	type TaskHandoff,
+	type WaitOptions,
 } from "./core/ipc.js";
-export { tmux, type TmuxSession, type SendOptions, type CaptureOptions } from "./core/tmux.js";
+export {
+	extractProtocolMessages,
+	isProtocolMessage,
+	type ParsedProtocolMessage,
+	parseProtocolMessage,
+} from "./core/protocol.js";
+export {
+	type CaptureOptions,
+	type SendOptions,
+	type TmuxSession,
+	tmux,
+} from "./core/tmux.js";
 export { logger } from "./utils/logger.js";
 export {
-  SessionLogger,
-  generateDescriptor,
-  type LogEntry,
-  type LogEntryType,
-  type ActiveSession,
-  type SessionState,
+	type ActiveSession,
+	generateDescriptor,
+	type LogEntry,
+	type LogEntryType,
+	SessionLogger,
+	type SessionState,
 } from "./utils/logger-session.js";
-export {
-  parseProtocolMessage,
-  isProtocolMessage,
-  extractProtocolMessages,
-  type ParsedProtocolMessage,
-} from "./core/protocol.js";
