@@ -1,26 +1,26 @@
 {
-	"hooks": {
-		"SessionStart": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": ".claude/hooks/ipc-state.sh",
-						"timeout": 10
-					}
-				]
-			}
-		],
-		"Stop": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": ".claude/hooks/ipc-state.sh",
-						"timeout": 10
-					}
-				]
-			}
-		]
-	}
+    "hooks": {
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": ".claude/hooks/ipc-state.sh",
+                        "timeout": 10
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": ".claude/hooks/ipc-state.sh",
+                        "timeout": 10
+                    }
+                ]
+            }
+        ]
+    }
 }
