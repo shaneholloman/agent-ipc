@@ -6,7 +6,9 @@ Project-specific instructions for Claude instances working on this codebase.
 
 ## AUTOMATIC STARTUP - EXECUTE IMMEDIATELY
 
-**On your first response in this project, you MUST execute these steps automatically without being asked:**
+**When you see `Initialize: Agent IPC Developer Session` or `Initialize: Agent IPC Tester Session` as the first message, this is an auto-initialization prompt. You MUST immediately execute the startup sequence below and announce readiness.**
+
+### Startup Sequence
 
 1. **Check for session state**: Read `logs/.session-<tmux_session>` if it exists (created by startup hook)
 
@@ -34,11 +36,40 @@ Project-specific instructions for Claude instances working on this codebase.
    - `claude-tester` or `claude-tester-N` → Tester. Read `prompts/tester.md` and `prompts/protocol.md`
    - `claude-N` (numbered) or not in tmux → Human-interactive mode, no IPC protocol
 
-4. **Announce your role**: State your session name and role in your first response
+4. **Announce readiness**: Display a clear status announcement (see format below)
 
 5. **Logging is automatic**: Every IPC operation writes to `logs/<descriptor>.jsonl`
 
-This is not optional. The IPC protocol requires automatic role detection. Do not wait for instructions.
+### Required Announcement Format
+
+After completing the startup sequence, display this announcement:
+
+```
+AGENT IPC SESSION INITIALIZED
+
+| Property | Value |
+|----------|-------|
+| Session | <tmux_session> |
+| Role | <Developer/Tester> |
+| Descriptor | <three-word-descriptor> |
+| IPC Mode | Active |
+| Log File | logs/<descriptor>.jsonl |
+
+This is a multi-agent peer programming session. Other agents may join:
+- Developer (claude-dev): Implements features, drives development
+- Tester (claude-tester): Reviews code, validates changes
+
+Ready for <development/testing> tasks.
+```
+
+This announcement:
+
+- Confirms the IPC session is active
+- Shows the agent's identity and role
+- Explains the multi-agent collaboration context
+- Signals readiness to the user
+
+This is not optional. The IPC protocol requires automatic initialization and announcement.
 
 ## Project Overview
 
@@ -113,17 +144,36 @@ Types: `STATUS_UPDATE`, `CONTEXT_COMPACTION`, `TASK_HANDOFF`, `ERROR_NOTICE`, `H
 
 ## Session Lifecycle (Automatic)
 
-The IPC system handles session lifecycle automatically via hooks:
+The IPC system handles session lifecycle automatically via a two-stage initialization:
 
-1. **SessionStart**: Hook runs → detects tmux session → writes `logs/.session` with role and persistent descriptor
-2. **Agent Init**: Agent reads `logs/.session` → knows its role → reads appropriate prompt files
-3. **Logging**: All IPC operations append to `logs/<descriptor>.jsonl`
-4. **Context Compaction**: Agent restarts → reads same `.session` file → continues with same descriptor
-5. **SessionStop**: Hook runs → cleans up `.session` file
+### Stage 1: Hook Initialization
 
-This flow ensures:
+When `csd` or `cst` alias runs:
 
-- One log file per IPC session (not per agent restart)
+1. **tmux session created** with role-based name (`claude-dev`, `claude-tester`)
+2. **Claude starts** in the tmux session
+3. **SessionStart hook fires** → detects tmux session → writes `logs/.session-<name>` with role and persistent descriptor
+4. **Context injected** → CLAUDE.md instructions appear in system reminders
+
+### Stage 2: Auto-Initialization Prompt
+
+After a 2-second delay:
+
+1. **Alias sends auto-prompt**: `Initialize: Agent IPC Developer Session`
+2. **Agent executes startup sequence** → reads session state, role docs
+3. **Agent announces readiness** → displays IPC session status to user
+4. **User sees confirmation** → knows agent is ready for peer programming
+
+### Ongoing Session
+
+- **Logging**: All IPC operations append to `logs/<descriptor>.jsonl`
+- **Context Compaction**: Agent restarts → reads same `.session` file → continues with same descriptor
+- **SessionStop**: Hook runs → cleans up `.session` file
+
+This two-stage flow ensures:
+
+- Agent automatically initializes without waiting for human input
+- User immediately sees confirmation that IPC mode is active
 - Role identity persists across context compaction
 - No manual configuration required
 

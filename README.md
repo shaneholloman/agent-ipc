@@ -204,8 +204,10 @@ claude-ipc/
 │   └── protocol.md        # Communication protocol spec
 ├── .claude/
 │   ├── settings.json      # Project hook configuration
-│   └── hooks/             # Hook scripts
-│       └── session-event.sh
+│   └── hooks -> ../hooks  # Symlink to hooks/
+├── hooks/                 # Hook scripts (source of truth)
+│   ├── README.md          # Hook documentation
+│   └── ipc-state.sh       # IPC session state management
 ├── scripts/               # Alternative IPC methods
 │   ├── sharedfile.sh      # Shared file inbox
 │   ├── buffer.sh          # tmux paste buffer

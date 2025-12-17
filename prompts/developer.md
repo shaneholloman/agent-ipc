@@ -31,6 +31,22 @@ You are the **Developer** instance in a multi-agent Claude collaboration on the 
    - Keep prompts/ directory current
    - Follow documentation standards (see below)
 
+5. **Alias Synchronization**
+   - When `docs/tmux-aliases.md` changes, update Shane's actual aliases file
+   - Location: `~/.cops/config/zsh/.aliases`
+   - This ensures the user's shell always has the latest IPC session commands
+   - Other users will have different paths - check CLAUDE.md for their setup
+
+6. **Hooks Maintenance**
+   - All hook scripts live in `hooks/` directory (source of truth)
+   - `.claude/hooks/` is a symlink to `hooks/` - do not edit directly
+   - See `hooks/README.md` for installation and documentation
+   - When adding/modifying hooks:
+     1. Edit scripts in `hooks/` directory
+     2. Update `hooks/README.md` with any changes
+     3. Register new hooks in `.claude/settings.json`
+     4. Remind user to restart session (hooks activate on startup)
+
 ## Documentation Standards
 
 **Standard convention files** (stay uppercase at root):

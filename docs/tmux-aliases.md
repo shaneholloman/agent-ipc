@@ -69,24 +69,30 @@ cs() {
     tmux attach-session -t "$session_name"
 }
 
-# Start IPC Developer session
+# Start IPC Developer session (with auto-initialization)
 csd() {
     if tmux has-session -t "claude-dev" 2>/dev/null; then
         echo "claude-dev session already exists. Attaching..."
         tmux attach-session -t "claude-dev"
     else
+        echo "Starting Agent IPC Developer session..."
         tmux new-session -d -s "claude-dev" -c "$(pwd)" "claude"
+        sleep 2  # Wait for Claude to initialize and hooks to run
+        tmux send-keys -t "claude-dev" "Initialize: Agent IPC Developer Session" Enter
         tmux attach-session -t "claude-dev"
     fi
 }
 
-# Start IPC Tester session
+# Start IPC Tester session (with auto-initialization)
 cst() {
     if tmux has-session -t "claude-tester" 2>/dev/null; then
         echo "claude-tester session already exists. Attaching..."
         tmux attach-session -t "claude-tester"
     else
+        echo "Starting Agent IPC Tester session..."
         tmux new-session -d -s "claude-tester" -c "$(pwd)" "claude"
+        sleep 2  # Wait for Claude to initialize and hooks to run
+        tmux send-keys -t "claude-tester" "Initialize: Agent IPC Tester Session" Enter
         tmux attach-session -t "claude-tester"
     fi
 }

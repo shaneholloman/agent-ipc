@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/session-event.sh",
+            "command": ".claude/hooks/ipc-state.sh",
             "timeout": 10
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/session-event.sh",
+            "command": ".claude/hooks/ipc-state.sh",
             "timeout": 10
           }
         ]
