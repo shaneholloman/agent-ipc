@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { ClaudeIPC } from "./ipc.js";
-import { SessionLogger } from "./logger-session.js";
-import { extractProtocolMessages } from "./protocol.js";
-import logger from "./logger.js";
+import { ClaudeIPC } from "./core/ipc.js";
+import { SessionLogger } from "./utils/logger-session.js";
+import { extractProtocolMessages } from "./core/protocol.js";
+import logger from "./utils/logger.js";
 
 // CLI commands are stateless - disable logging to avoid descriptor spam
 const ipc = new ClaudeIPC({ disableLogging: true });

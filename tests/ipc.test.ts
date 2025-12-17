@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { ClaudeIPC } from "./ipc.js";
-import { parseProtocolMessage, isProtocolMessage, extractProtocolMessages } from "./protocol.js";
+import { ClaudeIPC } from "../src/core/ipc.js";
+import { parseProtocolMessage, isProtocolMessage, extractProtocolMessages } from "../src/core/protocol.js";
 
 describe("ClaudeIPC", () => {
   let ipc: ClaudeIPC;

@@ -11,9 +11,9 @@ export {
   type TaskHandoff,
   type ErrorNotice,
   type Heartbeat,
-} from "./ipc.js";
-export { tmux, type TmuxSession, type SendOptions, type CaptureOptions } from "./tmux.js";
-export { logger } from "./logger.js";
+} from "./core/ipc.js";
+export { tmux, type TmuxSession, type SendOptions, type CaptureOptions } from "./core/tmux.js";
+export { logger } from "./utils/logger.js";
 export {
   SessionLogger,
   generateDescriptor,
@@ -21,10 +21,10 @@ export {
   type LogEntryType,
   type ActiveSession,
   type SessionState,
-} from "./logger-session.js";
+} from "./utils/logger-session.js";
 export {
   parseProtocolMessage,
   isProtocolMessage,
   extractProtocolMessages,
   type ParsedProtocolMessage,
-} from "./protocol.js";
+} from "./core/protocol.js";
