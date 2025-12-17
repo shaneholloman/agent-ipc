@@ -3,7 +3,7 @@
 # Triggered by: SessionStart, Stop
 #
 # This hook:
-# 1. Detects if we're in an IPC session (claude-dev, claude-tester)
+# 1. Detects if we're in an IPC session (agent-dev, agent-tester)
 # 2. Generates a persistent descriptor for the ENTIRE IPC session
 # 3. Writes session state to logs/.session for the agent to read
 # 4. Logs events for audit trail
@@ -29,16 +29,16 @@ TMUX_SESSION=$(tmux display-message -p '#{session_name}' 2>/dev/null || echo "")
 IPC_MODE="false"
 ROLE=""
 if [[ -n "$TMUX_SESSION" ]]; then
-  if [[ "$TMUX_SESSION" == "claude-dev" ]]; then
+  if [[ "$TMUX_SESSION" == "agent-dev" ]]; then
     IPC_MODE="true"
     ROLE="developer"
-  elif [[ "$TMUX_SESSION" == "claude-tester" ]]; then
+  elif [[ "$TMUX_SESSION" == "agent-tester" ]]; then
     IPC_MODE="true"
     ROLE="tester"
-  elif [[ "$TMUX_SESSION" =~ ^claude-tester-[0-9]+$ ]]; then
+  elif [[ "$TMUX_SESSION" =~ ^agent-tester-[0-9]+$ ]]; then
     IPC_MODE="true"
     ROLE="tester"
-  elif [[ "$TMUX_SESSION" =~ ^claude-dev-[0-9]+$ ]]; then
+  elif [[ "$TMUX_SESSION" =~ ^agent-dev-[0-9]+$ ]]; then
     IPC_MODE="true"
     ROLE="developer"
   fi
@@ -62,7 +62,7 @@ generate_descriptor() {
 }
 
 # Write session state file on start (per-session to avoid collisions)
-# Each IPC session gets its own state file: .session-claude-dev, .session-claude-tester, etc.
+# Each IPC session gets its own state file: .session-agent-dev, .session-agent-tester, etc.
 STATE_FILE="$LOGS_DIR/.session-$TMUX_SESSION"
 if [[ "$EVENT_TYPE" == "SessionStart" && "$IPC_MODE" == "true" ]]; then
   # Generate descriptor ONCE for this IPC session
