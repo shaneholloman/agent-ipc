@@ -193,8 +193,8 @@ Production mode outputs JSON for log aggregation.
 claude-ipc/
 ├── src/
 │   ├── index.ts           # Exports
-│   ├── claude-ipc.ts      # Main ClaudeIPC class
-│   ├── claude-ipc.test.ts # Vitest tests
+│   ├── ipc.ts             # Main ClaudeIPC class
+│   ├── ipc.test.ts        # Vitest tests
 │   ├── cli.ts             # CLI interface (commander.js)
 │   ├── logger.ts          # Pino logger configuration
 │   └── tmux.ts            # Low-level tmux operations

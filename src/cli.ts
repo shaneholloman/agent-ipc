@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { ClaudeIPC } from "./claude-ipc.js";
-import { SessionLogger } from "./session-logger.js";
+import { ClaudeIPC } from "./ipc.js";
+import { SessionLogger } from "./logger-session.js";
 import { extractProtocolMessages } from "./protocol.js";
 import logger from "./logger.js";
 

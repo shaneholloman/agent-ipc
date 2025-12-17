@@ -33,7 +33,7 @@ Developer and Tester share the same Claude Code session, taking turns.
 Example:
 
 ```txt
-Developer: "Please review src/claude-ipc.ts lines 50-100"
+Developer: "Please review src/ipc.ts lines 50-100"
 Tester: "REVIEW COMPLETE: Found 2 issues..."
 ```
 
@@ -58,7 +58,7 @@ pnpm run cli read claude-tester -n 50
 Or via TypeScript:
 
 ```typescript
-ipc.handoffTask("claude-tester", "Review src/claude-ipc.ts", "...", "medium");
+ipc.handoffTask("claude-tester", "Review src/ipc.ts", "...", "medium");
 ```
 
 ### How to Know Which Mode
@@ -232,7 +232,7 @@ When making requests to another agent:
 Example:
 
 ```txt
-REQUEST: Review the new protocol methods in claude-ipc.ts:278-394
+REQUEST: Review the new protocol methods in ipc.ts:278-394
 Context: Added 4 new methods for multi-agent coordination
 Priority: Medium
 Expected response: List of issues found, or approval if none

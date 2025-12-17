@@ -2,7 +2,7 @@
  * Protocol message parsing utilities
  *
  * Parses human-readable protocol messages back into structured objects.
- * Companion to formatProtocolMessage() in claude-ipc.ts.
+ * Companion to formatProtocolMessage() in ipc.ts.
  */
 
 import type {
@@ -13,7 +13,7 @@ import type {
   TaskHandoff,
   ErrorNotice,
   Heartbeat,
-} from "./claude-ipc.js";
+} from "./ipc.js";
 
 /**
  * Union type of all parsed protocol messages

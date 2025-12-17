@@ -1,5 +1,5 @@
 import { tmux, TmuxSession } from "./tmux.js";
-import { SessionLogger } from "./session-logger.js";
+import { SessionLogger } from "./logger-session.js";
 
 export interface Message {
   from: string;

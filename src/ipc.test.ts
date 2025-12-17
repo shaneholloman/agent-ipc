@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { ClaudeIPC } from "./claude-ipc.js";
+import { ClaudeIPC } from "./ipc.js";
 import { parseProtocolMessage, isProtocolMessage, extractProtocolMessages } from "./protocol.js";
 
 describe("ClaudeIPC", () => {

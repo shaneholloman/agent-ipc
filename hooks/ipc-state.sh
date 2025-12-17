@@ -48,7 +48,7 @@ fi
 LOGS_DIR="$(pwd)/logs"
 mkdir -p "$LOGS_DIR"
 
-# Word lists for three-word descriptor (same as session-logger.ts)
+# Word lists for three-word descriptor (same as logger-session.ts)
 ADJECTIVES=(brave calm dark eager fair gentle happy idle jolly keen lively merry noble odd proud quick rare sharp tall urgent vivid warm young zesty bold crisp deft fine grand hale)
 COLORS=(amber blue coral dusk ember frost gold haze iris jade khaki lime mint navy olive pearl quartz rose sage teal umber violet wine azure brass cedar denim fern grape ivory)
 ANIMALS=(ant bear crow deer eagle fox goat hawk ibis jay kite lion moth newt owl puma quail raven seal tiger urchin viper wolf yak zebra badger crane dove finch gull)

@@ -211,7 +211,7 @@ Delegate a task to a specific agent:
 ipc.handoffTask(
   "claude-2",
   "Review the protocol implementation",
-  "New protocol methods added to claude-ipc.ts - check for edge cases",
+  "New protocol methods added to ipc.ts - check for edge cases",
   "medium"
 );
 ```
@@ -222,7 +222,7 @@ Produces:
 [PROTOCOL:TASK_HANDOFF] from claude at 2024-01-15T06:15:30.000Z
 Task: Review the protocol implementation
 Priority: medium
-Context: New protocol methods added to claude-ipc.ts - check for edge cases
+Context: New protocol methods added to ipc.ts - check for edge cases
 ```
 
 Priority values: `low`, `medium`, `high`

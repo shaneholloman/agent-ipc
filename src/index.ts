@@ -11,7 +11,7 @@ export {
   type TaskHandoff,
   type ErrorNotice,
   type Heartbeat,
-} from "./claude-ipc.js";
+} from "./ipc.js";
 export { tmux, type TmuxSession, type SendOptions, type CaptureOptions } from "./tmux.js";
 export { logger } from "./logger.js";
 export {
@@ -21,7 +21,7 @@ export {
   type LogEntryType,
   type ActiveSession,
   type SessionState,
-} from "./session-logger.js";
+} from "./logger-session.js";
 export {
   parseProtocolMessage,
   isProtocolMessage,
