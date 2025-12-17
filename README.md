@@ -1,6 +1,6 @@
 # Agent IPC
 
-Inter-process communication for AI agent sessions running in tmux.
+Inter-process communication for AI agent sessions running in tmux. We may change this to AIC, which is short for Agent InterComm.
 
 ## Status: Working
 
