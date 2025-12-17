@@ -1,4 +1,5 @@
 import { tmux, TmuxSession } from "./tmux.js";
+import { SessionLogger } from "./session-logger.js";
 
 export interface Message {
   from: string;
@@ -21,6 +22,7 @@ export interface ProtocolMessage {
   type: ProtocolMessageType;
   from: string;
   timestamp: string;
+  seq?: number; // Sequence number for ordering
 }
 
 export interface CompactionNotice extends ProtocolMessage {
@@ -69,17 +71,45 @@ export interface WaitOptions {
   lines?: number;
 }
 
+export interface IPCOptions {
+  sessionName?: string;
+  /** Logging is enabled by default. Set to true to disable. */
+  disableLogging?: boolean;
+  logsDir?: string;
+}
+
 /**
  * Claude IPC - Inter-process communication between Claude Code sessions
  *
  * Enables Claude instances running in different tmux sessions to
  * communicate with each other via tmux send-keys and capture-pane.
+ *
+ * Two communication channels:
+ * - tmux: real-time, human-observable
+ * - JSONL logs: structured, parseable, audit trail
  */
 export class ClaudeIPC {
   private sessionName: string;
+  private logger: SessionLogger | null = null;
+  private sequenceNumber = 0;
 
-  constructor(sessionName?: string) {
-    this.sessionName = sessionName ?? tmux.currentSession() ?? "unknown";
+  constructor(options?: IPCOptions | string) {
+    // Support both old (string) and new (options) signatures
+    if (typeof options === "string") {
+      this.sessionName = options;
+      // Logging always enabled by default
+      this.logger = new SessionLogger(this.sessionName);
+      this.logger.logSessionStart();
+    } else {
+      this.sessionName =
+        options?.sessionName ?? tmux.currentSession() ?? "unknown";
+
+      // Logging enabled by default unless explicitly disabled
+      if (!options?.disableLogging) {
+        this.logger = new SessionLogger(this.sessionName, options?.logsDir);
+        this.logger.logSessionStart();
+      }
+    }
   }
 
   /**
@@ -87,6 +117,27 @@ export class ClaudeIPC {
    */
   get session(): string {
     return this.sessionName;
+  }
+
+  /**
+   * Get the session descriptor (if logging enabled)
+   */
+  get descriptor(): string | null {
+    return this.logger?.getDescriptor() ?? null;
+  }
+
+  /**
+   * Check if logging is enabled
+   */
+  get loggingEnabled(): boolean {
+    return this.logger !== null;
+  }
+
+  /**
+   * End the session (logs session end if logging enabled)
+   */
+  endSession(reason?: string): void {
+    this.logger?.logSessionEnd(reason);
   }
 
   /**
@@ -107,6 +158,7 @@ export class ClaudeIPC {
    * Send a message to another Claude session
    *
    * Key insight: text and C-Enter must be separate tmux commands
+   * Logs to JSONL alongside tmux transmission if logging enabled
    */
   send(target: string, message: string): SendResult {
     if (!this.sessionExists(target)) {
@@ -117,11 +169,14 @@ export class ClaudeIPC {
     }
 
     try {
-      // Step 1: Send the message text
+      // Step 1: Send the message text via tmux
       tmux.sendKeys(target, message);
 
       // Step 2: Submit with Ctrl+Enter (MUST be separate command)
       tmux.sendSubmit(target);
+
+      // Log the message if logging enabled
+      this.logger?.logMessageSent(target, message, "tmux");
 
       return {
         success: true,
@@ -138,12 +193,20 @@ export class ClaudeIPC {
   /**
    * Read the current output from a session
    * Returns null if session doesn't exist, empty string if no output
+   * Logs the read operation if logging enabled
    */
   read(target: string, lines = 50): string | null {
     if (!this.sessionExists(target)) {
       return null;
     }
-    return tmux.capturePane(target, { lines });
+    const content = tmux.capturePane(target, { lines });
+
+    // Log the read if logging enabled and we got content
+    if (content) {
+      this.logger?.logMessageReceived(target, content, lines);
+    }
+
+    return content;
   }
 
   /**
@@ -296,10 +359,14 @@ export class ClaudeIPC {
       type: "context_compaction",
       from: this.sessionName,
       timestamp: new Date().toISOString(),
+      seq: this.nextSeq(),
       summary,
       retainedKnowledge,
       currentTaskState,
     };
+
+    // Log to JSONL
+    this.logger?.logContextCompaction(summary, retainedKnowledge, currentTaskState);
 
     const message = this.formatProtocolMessage(notice);
     return this.broadcast(message);
@@ -317,10 +384,14 @@ export class ClaudeIPC {
       type: "status_update",
       from: this.sessionName,
       timestamp: new Date().toISOString(),
+      seq: this.nextSeq(),
       status,
       currentTask,
       progress,
     };
+
+    // Log to JSONL
+    this.logger?.logStatusUpdate(status, currentTask, progress);
 
     const message = this.formatProtocolMessage(update);
     return this.broadcast(message);
@@ -339,10 +410,14 @@ export class ClaudeIPC {
       type: "task_handoff",
       from: this.sessionName,
       timestamp: new Date().toISOString(),
+      seq: this.nextSeq(),
       task,
       context,
       priority,
     };
+
+    // Log to JSONL
+    this.logger?.logTaskHandoff(target, task, context, priority);
 
     const message = this.formatProtocolMessage(handoff);
     return this.send(target, message);
@@ -360,10 +435,14 @@ export class ClaudeIPC {
       type: "error_notice",
       from: this.sessionName,
       timestamp: new Date().toISOString(),
+      seq: this.nextSeq(),
       error,
       recoverable,
       needsAssistance,
     };
+
+    // Log to JSONL
+    this.logger?.logErrorNotice(error, recoverable, needsAssistance);
 
     const message = this.formatProtocolMessage(notice);
     return this.broadcast(message);
@@ -381,19 +460,31 @@ export class ClaudeIPC {
       type: "heartbeat",
       from: this.sessionName,
       timestamp: new Date().toISOString(),
+      seq: this.nextSeq(),
       status,
       currentTask,
     };
+
+    // Log to JSONL
+    this.logger?.logHeartbeat(status, currentTask);
 
     const message = this.formatProtocolMessage(heartbeat);
     return this.broadcast(message);
   }
 
   /**
+   * Get next sequence number
+   */
+  private nextSeq(): number {
+    return ++this.sequenceNumber;
+  }
+
+  /**
    * Format a protocol message for human-readable transmission
    */
   private formatProtocolMessage(msg: ProtocolMessage): string {
-    const header = `[PROTOCOL:${msg.type.toUpperCase()}] from ${msg.from} at ${msg.timestamp}`;
+    const seqStr = msg.seq !== undefined ? ` seq=${msg.seq}` : "";
+    const header = `[PROTOCOL:${msg.type.toUpperCase()}] from ${msg.from} at ${msg.timestamp}${seqStr}`;
 
     switch (msg.type) {
       case "context_compaction": {
@@ -455,6 +546,7 @@ export class ClaudeIPC {
 
     return responseLines.length > 0 ? responseLines.join("\n").trim() : null;
   }
+
 }
 
 export default ClaudeIPC;

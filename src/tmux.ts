@@ -114,9 +114,11 @@ export const tmux = {
 
   /**
    * Send Ctrl+Enter to submit in Claude TUI
+   * Small delay ensures paste completes before submit
    */
   sendSubmit(target: string): void {
-    execSync(`tmux send-keys -t '${shellEscape(target)}' C-Enter`);
+    // Brief delay to ensure paste buffer is fully processed
+    execSync(`sleep 0.1 && tmux send-keys -t '${shellEscape(target)}' C-Enter`);
   },
 
   /**

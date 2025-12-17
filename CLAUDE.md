@@ -4,6 +4,42 @@ Project-specific instructions for Claude instances working on this codebase.
 
 **Note:** `AGENTS.md` symlinks to this file. Other AI agents (Gemini, Codex, Cline, etc.) use `AGENTS.md` as their convention for project instructions. The symlink ensures all agents read from a single source of truth.
 
+## AUTOMATIC STARTUP - EXECUTE IMMEDIATELY
+
+**On your first response in this project, you MUST execute these steps automatically without being asked:**
+
+1. **Check for session state**: Read `logs/.session-<tmux_session>` if it exists (created by startup hook)
+
+   For example, `logs/.session-claude-dev` or `logs/.session-claude-tester`. Each IPC session gets its own state file to avoid collisions when running multiple agents.
+
+   The state file contains:
+
+   ```json
+   {
+     "tmux_session": "claude-dev",
+     "role": "developer",
+     "ipc_mode": true,
+     "descriptor": "brave-amber-fox",
+     "started_at": "2025-12-17T07:53:56Z",
+     "session_id": "abc123"
+   }
+   ```
+
+   The `descriptor` is generated ONCE at session start and persists for the entire IPC session. This ensures all log entries go to the same JSONL file (`logs/<descriptor>.jsonl`) even if context is compacted and the agent restarts.
+
+2. **Or detect via tmux**: Run `tmux display-message -p '#{session_name}'`
+
+3. **Role assignment**:
+   - `claude-dev` or `claude-dev-N` → Developer. Read `prompts/developer.md` and `prompts/protocol.md`
+   - `claude-tester` or `claude-tester-N` → Tester. Read `prompts/tester.md` and `prompts/protocol.md`
+   - `claude-N` (numbered) or not in tmux → Human-interactive mode, no IPC protocol
+
+4. **Announce your role**: State your session name and role in your first response
+
+5. **Logging is automatic**: Every IPC operation writes to `logs/<descriptor>.jsonl`
+
+This is not optional. The IPC protocol requires automatic role detection. Do not wait for instructions.
+
 ## Project Overview
 
 This is an inter-process communication library for Claude Code sessions running in tmux. The primary audience is **agents**, not humans.
@@ -43,6 +79,7 @@ This project uses tmux aliases defined in `docs/tmux-aliases.md`. Users must ins
 | `cs` | Start human session (claude-N) |
 | `csd` | Start IPC Developer session (claude-dev) |
 | `cst` | Start IPC Tester session (claude-tester) |
+| `csk <name>` | Kill a specific session |
 | `csl` | List all Claude sessions |
 | `csa` | Attach to session |
 | `cso` | Kill others, keep current |
@@ -74,12 +111,30 @@ All structured IPC messages follow:
 
 Types: `STATUS_UPDATE`, `CONTEXT_COMPACTION`, `TASK_HANDOFF`, `ERROR_NOTICE`, `HEARTBEAT`
 
+## Session Lifecycle (Automatic)
+
+The IPC system handles session lifecycle automatically via hooks:
+
+1. **SessionStart**: Hook runs → detects tmux session → writes `logs/.session` with role and persistent descriptor
+2. **Agent Init**: Agent reads `logs/.session` → knows its role → reads appropriate prompt files
+3. **Logging**: All IPC operations append to `logs/<descriptor>.jsonl`
+4. **Context Compaction**: Agent restarts → reads same `.session` file → continues with same descriptor
+5. **SessionStop**: Hook runs → cleans up `.session` file
+
+This flow ensures:
+
+- One log file per IPC session (not per agent restart)
+- Role identity persists across context compaction
+- No manual configuration required
+
 ## Critical Reminders
 
-1. **Hooks require session restart** - After modifying hooks, the Claude session must be restarted for changes to take effect
+1. **Hooks require session restart** - After modifying hooks in `.claude/hooks/`, you must kill and restart the tmux session for changes to take effect. The hook is registered at session start.
 
 2. **Always check responses** - After sending IPC messages, wait and read the response. Never fire-and-forget.
 
 3. **Explicit commands over aliases** - In protocol documentation, always show the actual tmux commands. Note aliases as optional shorthand. Agents need to see what actually executes.
 
 4. **Documentation standards** - Files in `docs/` use lowercase-with-dashes. Standard convention files (README.md, CHANGELOG.md, LICENSE) stay uppercase at root.
+
+5. **Log file per IPC session** - The descriptor is generated ONCE at session start. Even if the agent restarts (context compaction), the same log file is used. This is handled automatically.

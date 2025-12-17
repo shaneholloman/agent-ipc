@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { ClaudeIPC } from "./claude-ipc.js";
+import { SessionLogger } from "./session-logger.js";
+import { extractProtocolMessages } from "./protocol.js";
 import logger from "./logger.js";
 
-const ipc = new ClaudeIPC();
+// CLI commands are stateless - disable logging to avoid descriptor spam
+const ipc = new ClaudeIPC({ disableLogging: true });
 
 const program = new Command();
 
@@ -153,6 +156,121 @@ program
   .description("Show current session name")
   .action(() => {
     logger.info({ session: ipc.session }, "Current session");
+  });
+
+program
+  .command("status")
+  .description("Show status of all active IPC sessions with their descriptors")
+  .action(() => {
+    const sessions = ipc.listSessions();
+    const active = SessionLogger.getActiveSessions();
+
+    if (sessions.length === 0) {
+      logger.info("No Claude sessions found");
+      return;
+    }
+
+    logger.info({ count: sessions.length }, "Session status:");
+    for (const s of sessions) {
+      const activeInfo = active.find((a) => a.session === s.name);
+      const descriptor = activeInfo?.descriptor || "no-descriptor";
+      const attached = s.attached ? "attached" : "detached";
+      const current = s.name === ipc.session ? "current" : "";
+      logger.info({
+        session: s.name,
+        descriptor,
+        windows: s.windows,
+        attached,
+        current: current || undefined,
+        started: activeInfo?.startedAt,
+      });
+    }
+  });
+
+program
+  .command("ping")
+  .description("Send a heartbeat to check if a session is responsive")
+  .argument("<target>", "Target session name")
+  .option("-t, --timeout <ms>", "Timeout in milliseconds", "10000")
+  .action(async (target: string, options: { timeout: string }) => {
+    if (!ipc.sessionExists(target)) {
+      logger.error({ target }, "Session not found");
+      process.exit(1);
+    }
+
+    logger.info({ target }, "Pinging...");
+
+    // Capture initial state
+    const before = ipc.read(target, 30) || "";
+
+    // Send heartbeat directly to target (not broadcast)
+    const result = ipc.send(
+      target,
+      `[PROTOCOL:HEARTBEAT] from ${ipc.session} at ${new Date().toISOString()} seq=0\nStatus: alive\nTask: ping check`
+    );
+    if (!result.success) {
+      logger.error({ target, error: result.message }, "Failed to send ping");
+      process.exit(1);
+    }
+
+    // Wait for response
+    const timeout = parseInt(options.timeout, 10);
+    const startTime = Date.now();
+    const pollInterval = 1000;
+
+    while (Date.now() - startTime < timeout) {
+      await new Promise((r) => setTimeout(r, pollInterval));
+      const after = ipc.read(target, 50) || "";
+
+      // Check if there's new content that looks like a response
+      if (after !== before && after.length > before.length) {
+        // Look for protocol messages in the new content
+        const messages = extractProtocolMessages(after);
+        const recentMessages = messages.filter(
+          (m) => m.from === target && Date.now() - new Date(m.timestamp).getTime() < timeout
+        );
+
+        if (recentMessages.length > 0) {
+          logger.info({ target, latency: Date.now() - startTime }, "Session is responsive");
+          process.exit(0);
+        }
+      }
+    }
+
+    logger.warn({ target, timeout }, "No response - session may be busy or unresponsive");
+    process.exit(1);
+  });
+
+program
+  .command("parse")
+  .description("Parse protocol messages from stdin or a file")
+  .option("-f, --file <path>", "File to read from (default: stdin)")
+  .action(async (options: { file?: string }) => {
+    let input: string;
+
+    if (options.file) {
+      const fs = await import("fs");
+      input = fs.readFileSync(options.file, "utf-8");
+    } else {
+      // Read from stdin
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) {
+        chunks.push(chunk);
+      }
+      input = Buffer.concat(chunks).toString("utf-8");
+    }
+
+    const messages = extractProtocolMessages(input);
+
+    if (messages.length === 0) {
+      logger.info("No protocol messages found");
+      return;
+    }
+
+    logger.info({ count: messages.length }, "Protocol messages found:");
+    for (const msg of messages) {
+      console.log(JSON.stringify(msg, null, 2));
+    }
   });
 
 program.parse();

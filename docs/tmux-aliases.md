@@ -10,6 +10,7 @@ Shell functions for managing Claude Code sessions in tmux.
 | `cs` | Start human session (auto-increments: claude-1, claude-2, ...) |
 | `csd` | Start IPC Developer session (claude-dev) |
 | `cst` | Start IPC Tester session (claude-tester) |
+| `csk <name>` | Kill a specific Claude session by name |
 | `csl` | List all Claude tmux sessions |
 | `csa <name>` | Attach to a specific Claude session |
 | `cso` | Kill other Claude sessions (keeps current) |
@@ -87,6 +88,27 @@ cst() {
     else
         tmux new-session -d -s "claude-tester" -c "$(pwd)" "claude"
         tmux attach-session -t "claude-tester"
+    fi
+}
+
+# Kill a specific Claude session by name
+csk() {
+    local target="${1:-}"
+
+    if [[ -z "$target" ]]; then
+        echo "Usage: csk <session-name>"
+        echo ""
+        echo "Available Claude sessions:"
+        csl
+        return 1
+    fi
+
+    if tmux kill-session -t "$target" 2>/dev/null; then
+        echo "Killed session: $target"
+    else
+        echo "Session '$target' not found"
+        csl
+        return 1
     fi
 }
 
