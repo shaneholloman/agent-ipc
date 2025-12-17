@@ -1,19 +1,19 @@
 # Multi-Agent Communication Protocol
 
-This document defines communication protocols for Claude instances collaborating on `claude-ipc`.
+This document defines communication protocols for AI agents collaborating on `agent-ipc`.
 
 ## Roles
 
 | Role      | Session Name                 | Responsibility                                |
 | --------- | ---------------------------- | --------------------------------------------- |
-| Developer | `claude-dev`                 | Implements features, drives development       |
-| Tester    | `claude-tester`              | Reviews code, validates changes, catches bugs |
-| Tester-2  | `claude-tester-2` (optional) | Parallel testing when safe                    |
+| Developer | `agent-dev`                 | Implements features, drives development       |
+| Tester    | `agent-tester`              | Reviews code, validates changes, catches bugs |
+| Tester-2  | `agent-tester-2` (optional) | Parallel testing when safe                    |
 
 **Naming Convention:**
 
-- `claude-N` (numbered) - Reserved for human-interactive sessions
-- `claude-<role>` (named) - Inter-agent mode sessions with specific roles
+- `agent-N` (numbered) - Reserved for human-interactive sessions
+- `agent-<role>` (named) - Inter-agent mode sessions with specific roles
 
 **Note:** Actual session names may vary. The onboarding prompt will specify the exact session names in use. When in doubt, check your session name with `tmux display-message -p '#{session_name}'`.
 
@@ -42,23 +42,23 @@ Tester: "REVIEW COMPLETE: Found 2 issues..."
 Developer and Tester run in separate tmux sessions.
 
 - **Communication**: Use IPC CLI or TypeScript methods
-- **Session names**: `claude-dev`, `claude-tester` (role-based)
+- **Session names**: `agent-dev`, `agent-tester` (role-based)
 - **Use case**: Parallel work, long-running tasks, autonomous agents
 
 Example:
 
 ```bash
 # Developer sends to Tester
-pnpm run cli send claude-tester "Review request: ..."
+pnpm run cli send agent-tester "Review request: ..."
 
 # Developer checks response
-pnpm run cli read claude-tester -n 50
+pnpm run cli read agent-tester -n 50
 ```
 
 Or via TypeScript:
 
 ```typescript
-ipc.handoffTask("claude-tester", "Review src/ipc.ts", "...", "medium");
+ipc.handoffTask("agent-tester", "Review src/ipc.ts", "...", "medium");
 ```
 
 ### How to Know Which Mode
@@ -81,8 +81,8 @@ After setup, agent-to-agent communication uses IPC.
 
 ### Bootstrapping Flow (ASYNC Mode)
 
-1. User spawns `claude-dev` session
-2. User spawns `claude-tester` session
+1. User spawns `agent-dev` session
+2. User spawns `agent-tester` session
 3. User sends onboarding prompt to each agent
 4. Agents read role docs and confirm understanding
 5. Developer begins work, uses IPC to communicate with Tester
@@ -254,19 +254,19 @@ Escalate to user when:
 ### Starting Human-Interactive Sessions
 
 ```bash
-cs  # Creates claude-N with auto-increment (for human use)
+cs  # Creates agent-N with auto-increment (for human use)
 ```
 
 ### Starting Inter-Agent Sessions
 
 ```bash
 # Developer session (alias: csd)
-tmux new-session -d -s claude-dev -c "$(pwd)" 'claude'
-tmux attach -t claude-dev
+tmux new-session -d -s agent-dev -c "$(pwd)" 'claude'
+tmux attach -t agent-dev
 
 # Tester session (alias: cst)
-tmux new-session -d -s claude-tester -c "$(pwd)" 'claude'
-tmux attach -t claude-tester
+tmux new-session -d -s agent-tester -c "$(pwd)" 'claude'
+tmux attach -t agent-tester
 ```
 
 The `-c "$(pwd)"` ensures agents start in the project directory.
@@ -289,8 +289,8 @@ tmux display-message -p '#{session_name}'
 
 ```bash
 # Kill specific session
-tmux kill-session -t claude-dev
-tmux kill-session -t claude-tester
+tmux kill-session -t agent-dev
+tmux kill-session -t agent-tester
 
 # Kill others, keep current (alias: cso)
 # See docs/tmux-aliases.md for implementation

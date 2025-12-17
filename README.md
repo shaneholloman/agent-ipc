@@ -1,16 +1,16 @@
-# Claude IPC
+# Agent IPC
 
-Inter-process communication for Claude Code sessions running in tmux.
+Inter-process communication for AI agent sessions running in tmux.
 
 ## Status: Working
 
-Bidirectional Claude-to-Claude communication has been tested and confirmed working.
+Bidirectional agent-to-agent communication has been tested and confirmed working.
 
 ## Installation
 
 ```bash
 # Clone and install
-cd claude-ipc
+cd agent-ipc
 pnpm install
 
 # Run with tsx (development)
@@ -23,24 +23,24 @@ node dist/cli.js <command>
 
 ## TypeScript API
 
-### ClaudeIPC Class
+### AgentIPC Class
 
 ```typescript
-import { ClaudeIPC } from "./src/index.js";
+import { AgentIPC } from "./src/index.js";
 
-const ipc = new ClaudeIPC();
+const ipc = new AgentIPC();
 
-// List all Claude sessions
+// List all agent sessions
 const sessions = ipc.listSessions();
 
 // Send a message to another session
-const result = ipc.send("claude-2", "Hello from TypeScript!");
+const result = ipc.send("agent-2", "Hello from TypeScript!");
 
 // Read output from a session
-const output = ipc.read("claude-2", 50);
+const output = ipc.read("agent-2", 50);
 
 // Send and wait for response
-const response = await ipc.sendAndWait("claude-2", "What is 2+2?", {
+const response = await ipc.sendAndWait("agent-2", "What is 2+2?", {
   timeout: 30000,
   pollInterval: 2000,
 });
@@ -49,15 +49,15 @@ const response = await ipc.sendAndWait("claude-2", "What is 2+2?", {
 const results = ipc.broadcast("Status check");
 
 // Session management
-const newSession = ipc.createSession(); // Creates claude-N
-ipc.killSession("claude-2");
+const newSession = ipc.createSession(); // Creates agent-N
+ipc.killSession("agent-2");
 ipc.killOthers(); // Keep current, kill rest
 ipc.killAll();
 
 // Protocol methods for multi-agent coordination
 ipc.notifyCompaction("Summary of retained context", ["item1", "item2"], "current task");
 ipc.notifyStatus("working", "Current task", "50% progress");
-ipc.handoffTask("claude-2", "Task description", "Context for the task", "high");
+ipc.handoffTask("agent-2", "Task description", "Context for the task", "high");
 ipc.notifyError("Error description", true, false);
 ```
 
@@ -68,22 +68,22 @@ ipc.notifyError("Error description", true, false);
 pnpm run cli list
 
 # Send message
-pnpm run cli send claude-2 "Your message here"
+pnpm run cli send agent-2 "Your message here"
 
 # Read output (default 50 lines)
-pnpm run cli read claude-2
-pnpm run cli read claude-2 -n 30
+pnpm run cli read agent-2
+pnpm run cli read agent-2 -n 30
 
 # Send and wait for response (with optional timeout/poll)
-pnpm run cli ask claude-2 "What is the capital of France?"
-pnpm run cli ask claude-2 "Complex question" -t 120000 -p 3000
+pnpm run cli ask agent-2 "What is the capital of France?"
+pnpm run cli ask agent-2 "Complex question" -t 120000 -p 3000
 
 # Broadcast to all
 pnpm run cli broadcast "Status check"
 
 # Session management
 pnpm run cli create
-pnpm run cli kill claude-2
+pnpm run cli kill agent-2
 pnpm run cli kill-others
 pnpm run cli kill-all
 pnpm run cli current
@@ -93,7 +93,7 @@ pnpm run cli current
 
 | File                   | Description                                                    |
 | ---------------------- | -------------------------------------------------------------- |
-| `docs/tmux-aliases.md` | Shell aliases (`cs`, `csd`, `cst`, `csl`, `csa`, `cso`, `csx`) |
+| `docs/tmux-aliases.md` | Shell aliases (`as`, `asd`, `ast`, `asl`, `asa`, `aso`, `asx`) |
 | `docs/patterns.md`     | Detailed IPC patterns and key discoveries                      |
 
 ## Alternative IPC Methods (scripts/)
@@ -117,25 +117,25 @@ When sending programmatically, **text and submit must be separate tmux commands*
 
 ```bash
 # This works:
-tmux send-keys -t claude-2 'Your message'
-tmux send-keys -t claude-2 C-Enter
+tmux send-keys -t agent-2 'Your message'
+tmux send-keys -t agent-2 C-Enter
 
 # This does NOT work:
-tmux send-keys -t claude-2 'Your message' C-Enter
+tmux send-keys -t agent-2 'Your message' C-Enter
 ```
 
 ## Shell Aliases
 
 | Command      | Description                                                 |
 | ------------ | ----------------------------------------------------------- |
-| `c`          | Run Claude directly (no tmux)                               |
-| `cs`         | New human session (auto-increment: claude-1, claude-2, ...) |
-| `csd`        | Start IPC Developer session (claude-dev)                    |
-| `cst`        | Start IPC Tester session (claude-tester)                    |
-| `csl`        | List all Claude sessions                                    |
-| `csa <name>` | Attach to session                                           |
-| `cso`        | Kill others (keep current)                                  |
-| `csx`        | Exterminate ALL sessions (nuclear)                          |
+| `ag`         | Run agent directly (no tmux)                                |
+| `as`         | New human session (auto-increment: agent-1, agent-2, ...)   |
+| `asd`        | Start IPC Developer session (agent-dev)                     |
+| `ast`        | Start IPC Tester session (agent-tester)                     |
+| `asl`        | List all agent sessions                                     |
+| `asa <name>` | Attach to session                                           |
+| `aso`        | Kill others (keep current)                                  |
+| `asx`        | Exterminate ALL sessions (nuclear)                          |
 
 ## Quick Start
 
@@ -143,26 +143,26 @@ tmux send-keys -t claude-2 'Your message' C-Enter
 # 1. Source shell config (after installing aliases)
 source ~/.zshrc
 
-# 2. Start Claude sessions
-cs  # Creates claude-1
-cs  # Creates claude-2
+# 2. Start agent sessions
+as  # Creates agent-1
+as  # Creates agent-2
 
 # 3. List sessions
-csl
+asl
 
 # 4. Send message via CLI
-pnpm run cli send claude-2 "Hello from TypeScript!"
+pnpm run cli send agent-2 "Hello from TypeScript!"
 
 # 5. Read response
-pnpm run cli read claude-2
+pnpm run cli read agent-2
 ```
 
 ## Use Cases
 
-- **Task delegation**: Orchestrator Claude assigns work to specialist Claudes
-- **Parallel exploration**: Multiple Claudes explore different approaches
-- **Peer review**: One Claude reviews another's output
-- **Pipeline processing**: Chain Claudes for multi-stage workflows
+- **Task delegation**: Orchestrator agent assigns work to specialist agents
+- **Parallel exploration**: Multiple agents explore different approaches
+- **Peer review**: One agent reviews another's output
+- **Pipeline processing**: Chain agents for multi-stage workflows
 
 ## Logging
 
@@ -178,10 +178,10 @@ LOG_LEVEL=debug pnpm run cli list
 Development mode (NODE_ENV != production) uses pino-pretty for colorized output:
 
 ```sh
-[06:13:24] INFO: Claude sessions
+[06:13:24] INFO: Agent sessions
     count: 3
 [06:13:24] INFO:
-    session: "claude-1"
+    session: "agent-1"
     windows: 1
 ```
 
@@ -190,12 +190,12 @@ Production mode outputs JSON for log aggregation.
 ## Project Structure
 
 ```tree
-claude-ipc/
+agent-ipc/
 ├── src/
 │   ├── index.ts           # Public exports
 │   ├── cli.ts             # CLI interface (commander.js)
 │   ├── core/              # Core IPC functionality
-│   │   ├── ipc.ts         # Main ClaudeIPC class
+│   │   ├── ipc.ts         # Main AgentIPC class
 │   │   ├── tmux.ts        # Low-level tmux operations
 │   │   └── protocol.ts    # Protocol message parsing
 │   └── utils/             # Supporting utilities
@@ -235,9 +235,9 @@ claude-ipc/
 # Destroy named pipe
 ./scripts/fifo.sh destroy
 
-# Kill other Claude sessions (keep current)
-cso
+# Kill other agent sessions (keep current)
+aso
 
 # Exterminate ALL sessions including your own (nuclear)
-csx
+asx
 ```

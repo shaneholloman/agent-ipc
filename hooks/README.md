@@ -110,7 +110,7 @@ Note: With this method, you must re-copy after any changes to hook scripts.
 
 1. Reads hook input JSON from stdin (provided by Claude Code)
 2. Detects the tmux session name
-3. Determines if this is an IPC session (`claude-dev`, `claude-tester`, etc.)
+3. Determines if this is an IPC session (`agent-dev`, `agent-tester`, etc.)
 4. On SessionStart:
    - Generates a three-word descriptor (e.g., `brave-amber-fox`)
    - Writes session state to `logs/.session-<tmux_session>`
@@ -123,7 +123,7 @@ Note: With this method, you must re-copy after any changes to hook scripts.
 
 ```json
 {
-  "tmux_session": "claude-dev",
+  "tmux_session": "agent-dev",
   "role": "developer",
   "ipc_mode": true,
   "descriptor": "brave-amber-fox",
@@ -182,7 +182,7 @@ To test a hook manually:
 echo '{"hook_event_name": "SessionStart", "session_id": "test-123"}' | ./hooks/ipc-state.sh
 
 # Check results
-cat logs/.session-claude-dev
+cat logs/.session-agent-dev
 cat logs/events.jsonl
 ```
 

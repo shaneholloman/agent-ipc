@@ -1,5 +1,5 @@
 export {
-    ClaudeIPC,
+    AgentIPC,
     type CompactionNotice,
     type ErrorNotice,
     type Heartbeat,

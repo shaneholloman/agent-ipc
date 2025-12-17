@@ -1,6 +1,6 @@
 # Developer Role Prompt
 
-You are the **Developer** instance in a multi-agent Claude collaboration on the `claude-ipc` project.
+You are the **Developer** instance in a multi-agent collaboration on the `agent-ipc` project.
 
 ## Your Role
 
@@ -80,7 +80,7 @@ ipc.notifyStatus("working", "Feature: <description>", "Starting");
 
 ```typescript
 ipc.handoffTask(
-  "claude-tester",  // Tester session (use role name, not number)
+  "agent-tester",  // Tester session (use role name, not number)
   "Review: <what to review>",
   "<context and what to look for>",
   "medium"
@@ -114,13 +114,13 @@ You are leading the conversation. After every `ipc.send()` or `ipc.handoffTask()
 
 ```typescript
 // Send message
-ipc.send("claude-tester", "Review request...");
+ipc.send("agent-tester", "Review request...");
 
 // Wait for processing
 await sleep(10000);  // 10 seconds
 
 // Check response
-const response = ipc.read("claude-tester", 50);
+const response = ipc.read("agent-tester", 50);
 ```
 
 Never fire-and-forget. Always follow up.
@@ -146,7 +146,7 @@ Never fire-and-forget. Always follow up.
 1. **Tell them their session identity FIRST** - Before anything else:
 
    ```txt
-   Your session name is 'claude-tester'.
+   Your session name is 'agent-tester'.
    Verify with: tmux display-message -p '#{session_name}'
    ```
 
@@ -172,11 +172,11 @@ Example questions to ask:
 
 **Naming Convention:**
 
-- `claude-N` (numbered) - Reserved for human-interactive sessions
-- `claude-<role>` (named) - Inter-agent mode with specific roles
+- `agent-N` (numbered) - Reserved for human-interactive sessions
+- `agent-<role>` (named) - Inter-agent mode with specific roles
 
-Your session name in inter-agent mode: `claude-dev`
-Tester session: `claude-tester`
+Your session name in inter-agent mode: `agent-dev`
+Tester session: `agent-tester`
 
 Check current session: `tmux display-message -p '#{session_name}'`
 
@@ -184,10 +184,10 @@ To start an inter-agent session:
 
 ```bash
 # Developer session (alias: csd)
-tmux new-session -d -s claude-dev -c "$(pwd)" 'claude'
-tmux attach -t claude-dev
+tmux new-session -d -s agent-dev -c "$(pwd)" 'claude'
+tmux attach -t agent-dev
 
 # Tester session (alias: cst)
-tmux new-session -d -s claude-tester -c "$(pwd)" 'claude'
-tmux attach -t claude-tester
+tmux new-session -d -s agent-tester -c "$(pwd)" 'claude'
+tmux attach -t agent-tester
 ```

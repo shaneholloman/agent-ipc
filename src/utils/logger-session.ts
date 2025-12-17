@@ -17,7 +17,7 @@ import {
 import { join } from "node:path";
 import { logger } from "./logger.js";
 
-// Word lists for three-word descriptors (like Claude's todo lists)
+// Word lists for three-word descriptors
 const ADJECTIVES = [
     "brave",
     "calm",
@@ -201,7 +201,7 @@ export class SessionLogger {
         const providedName =
             sessionName || process.env.TMUX_SESSION || "unknown-session";
 
-        // Session state file is per-session: .session-claude-dev, .session-claude-tester, etc.
+        // Session state file is per-session: .session-agent-dev, .session-agent-tester, etc.
         this.sessionStateFile = join(this.logsDir, `.session-${providedName}`);
 
         this.ensureLogsDir();

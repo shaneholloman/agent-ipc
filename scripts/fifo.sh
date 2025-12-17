@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-FIFO="/tmp/claude-ipc-fifo"
+FIFO="/tmp/agent-ipc-fifo"
 ACTION="${1:-}"
 MESSAGE="${2:-}"
 

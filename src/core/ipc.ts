@@ -79,16 +79,16 @@ export interface IPCOptions {
 }
 
 /**
- * Claude IPC - Inter-process communication between Claude Code sessions
+ * Agent IPC - Inter-process communication between AI agent sessions
  *
- * Enables Claude instances running in different tmux sessions to
+ * Enables AI agents running in different tmux sessions to
  * communicate with each other via tmux send-keys and capture-pane.
  *
  * Two communication channels:
  * - tmux: real-time, human-observable
  * - JSONL logs: structured, parseable, audit trail
  */
-export class ClaudeIPC {
+export class AgentIPC {
     private sessionName: string;
     private logger: SessionLogger | null = null;
     private sequenceNumber = 0;
@@ -144,10 +144,10 @@ export class ClaudeIPC {
     }
 
     /**
-     * List all Claude sessions
+     * List all agent sessions
      */
     listSessions(): TmuxSession[] {
-        return tmux.listClaudeSessions();
+        return tmux.listAgentSessions();
     }
 
     /**
@@ -158,7 +158,7 @@ export class ClaudeIPC {
     }
 
     /**
-     * Send a message to another Claude session
+     * Send a message to another agent session
      *
      * Key insight: text and C-Enter must be separate tmux commands
      * Logs to JSONL alongside tmux transmission if logging enabled
@@ -249,7 +249,7 @@ export class ClaudeIPC {
 
             // Check if content has changed and is no longer "thinking"
             if (currentContent !== lastContent) {
-                // Check if Claude is still processing
+                // Check if agent is still processing
                 if (
                     currentContent.includes("Wrangling") ||
                     currentContent.includes("Thinking")
@@ -275,7 +275,7 @@ export class ClaudeIPC {
     }
 
     /**
-     * Broadcast a message to all Claude sessions except self
+     * Broadcast a message to all agent sessions except self
      */
     broadcast(message: string): Map<string, SendResult> {
         const results = new Map<string, SendResult>();
@@ -291,34 +291,34 @@ export class ClaudeIPC {
     }
 
     /**
-     * Create a new Claude session with auto-incrementing name
+     * Create a new agent session with auto-incrementing name
      */
     createSession(): string {
         const sessions = this.listSessions();
         let maxNum = 0;
 
         for (const session of sessions) {
-            const match = session.name.match(/^claude-(\d+)$/);
+            const match = session.name.match(/^agent-(\d+)$/);
             if (match) {
                 const num = parseInt(match[1], 10);
                 if (num > maxNum) maxNum = num;
             }
         }
 
-        const newName = `claude-${maxNum + 1}`;
-        tmux.createClaudeSession(newName);
+        const newName = `agent-${maxNum + 1}`;
+        tmux.createAgentSession(newName);
         return newName;
     }
 
     /**
-     * Kill a Claude session
+     * Kill an agent session
      */
     killSession(name: string): boolean {
         return tmux.killSession(name);
     }
 
     /**
-     * Kill all Claude sessions except the current one
+     * Kill all agent sessions except the current one
      */
     killOthers(): number {
         const sessions = this.listSessions();
@@ -336,7 +336,7 @@ export class ClaudeIPC {
     }
 
     /**
-     * Kill all Claude sessions
+     * Kill all agent sessions
      */
     killAll(): number {
         const sessions = this.listSessions();
@@ -538,7 +538,7 @@ export class ClaudeIPC {
 
         const newLines = lines.filter((line) => !beforeLines.has(line));
 
-        // Look for Claude's response (lines starting with special chars or plain text after >)
+        // Look for agent's response (lines starting with special chars or plain text after >)
         const responseLines: string[] = [];
         let inResponse = false;
 
@@ -560,4 +560,4 @@ export class ClaudeIPC {
     }
 }
 
-export default ClaudeIPC;
+export default AgentIPC;

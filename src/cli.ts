@@ -1,33 +1,48 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { ClaudeIPC } from "./core/ipc.js";
+import { AgentIPC } from "./core/ipc.js";
 import { extractProtocolMessages } from "./core/protocol.js";
 import logger from "./utils/logger.js";
 import { SessionLogger } from "./utils/logger-session.js";
 
 // CLI commands are stateless - disable logging to avoid descriptor spam
-const ipc = new ClaudeIPC({ disableLogging: true });
+const ipc = new AgentIPC({ disableLogging: true });
 
 const program = new Command();
 
 program
-    .name("claude-ipc")
-    .description(
-        "Inter-process communication for Claude Code sessions via tmux",
-    )
-    .version("1.0.0");
+    .name("agent-ipc")
+    .description("Inter-process communication for AI agent sessions via tmux")
+    .version("1.0.0")
+    .addHelpText(
+        "after",
+        `
+Shell Aliases (install in ~/.zshrc or ~/.bashrc):
+  ag              Run agent directly (no tmux)
+  as              Start human session (agent-1, agent-2, ...)
+  asd             Start IPC Developer session (agent-dev)
+  ast             Start IPC Tester session (agent-tester)
+  asl             List all agent sessions
+  asa <name>      Attach to session
+  ask <name>      Kill session
+  aso             Kill others (keep current)
+  asx             Exterminate ALL sessions
+
+Run 'agent-ipc aliases' for full details and installation instructions.
+`,
+    );
 
 program
     .command("list")
     .alias("ls")
-    .description("List all Claude sessions")
+    .description("List all agent sessions")
     .action(() => {
         const sessions = ipc.listSessions();
         if (sessions.length === 0) {
-            logger.info("No Claude sessions found");
+            logger.info("No agent sessions found");
             return;
         }
-        logger.info({ count: sessions.length }, "Claude sessions");
+        logger.info({ count: sessions.length }, "Agent sessions");
         for (const s of sessions) {
             const attached = s.attached ? "(attached)" : "";
             const current = s.name === ipc.session ? "(current)" : "";
@@ -42,7 +57,7 @@ program
 
 program
     .command("send")
-    .description("Send a message to a Claude session")
+    .description("Send a message to an agent session")
     .argument("<target>", "Target session name")
     .argument("<message...>", "Message to send")
     .action((target: string, messageParts: string[]) => {
@@ -58,7 +73,7 @@ program
 
 program
     .command("read")
-    .description("Read output from a Claude session")
+    .description("Read output from an agent session")
     .argument("<target>", "Target session name")
     .option("-n, --lines <number>", "Number of lines to read", "50")
     .action((target: string, options: { lines: string }) => {
@@ -111,13 +126,13 @@ program
 
 program
     .command("broadcast")
-    .description("Send a message to all other Claude sessions")
+    .description("Send a message to all other agent sessions")
     .argument("<message...>", "Message to broadcast")
     .action((messageParts: string[]) => {
         const message = messageParts.join(" ");
         const results = ipc.broadcast(message);
         if (results.size === 0) {
-            logger.info("No other Claude sessions to broadcast to");
+            logger.info("No other agent sessions to broadcast to");
             return;
         }
         for (const [session, result] of results) {
@@ -134,7 +149,7 @@ program
 
 program
     .command("create")
-    .description("Create a new Claude session")
+    .description("Create a new agent session")
     .action(() => {
         const name = ipc.createSession();
         logger.info({ session: name }, "Session created");
@@ -142,7 +157,7 @@ program
 
 program
     .command("kill")
-    .description("Kill a specific Claude session")
+    .description("Kill a specific agent session")
     .argument("<target>", "Session to kill")
     .action((target: string) => {
         if (ipc.killSession(target)) {
@@ -155,7 +170,7 @@ program
 
 program
     .command("kill-others")
-    .description("Kill all Claude sessions except current")
+    .description("Kill all agent sessions except current")
     .action(() => {
         const count = ipc.killOthers();
         logger.info({ count }, "Sessions killed");
@@ -163,7 +178,7 @@ program
 
 program
     .command("kill-all")
-    .description("Kill all Claude sessions")
+    .description("Kill all agent sessions")
     .action(() => {
         const count = ipc.killAll();
         logger.info({ count }, "Sessions killed");
@@ -186,7 +201,7 @@ program
         const active = SessionLogger.getActiveSessions();
 
         if (sessions.length === 0) {
-            logger.info("No Claude sessions found");
+            logger.info("No agent sessions found");
             return;
         }
 
@@ -270,6 +285,43 @@ program
             "No response - session may be busy or unresponsive",
         );
         process.exit(1);
+    });
+
+program
+    .command("aliases")
+    .description("Show shell aliases for managing agent sessions")
+    .action(() => {
+        console.log(`
+Agent IPC Shell Aliases
+=======================
+
+Install these in your shell config (~/.zshrc, ~/.bashrc, etc.)
+See: docs/tmux-aliases.md for full implementation
+
+Session Management:
+  ag              Run agent directly (no tmux)
+  as              Start new human session (agent-1, agent-2, ...)
+  asd             Start IPC Developer session (agent-dev)
+  ast             Start IPC Tester session (agent-tester)
+  asl             List all agent sessions
+  asa <name>      Attach to a specific session
+  ask <name>      Kill a specific session
+  aso             Kill other sessions (keep current)
+  asx             Exterminate ALL sessions (nuclear)
+
+Quick Start:
+  as              # Creates agent-1 and attaches
+  as              # Creates agent-2 in another terminal
+  asl             # List sessions
+  asa agent-1     # Attach to agent-1
+
+IPC Sessions (for multi-agent collaboration):
+  asd             # Start developer session (agent-dev)
+  ast             # Start tester session (agent-tester)
+
+Note: All commands execute 'claude' as the underlying provider.
+      Session names use 'agent-*' pattern for provider-agnostic naming.
+`);
     });
 
 program

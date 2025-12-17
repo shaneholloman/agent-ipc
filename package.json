@@ -1,12 +1,12 @@
 {
-    "name": "claude-ipc",
+    "name": "agent-ipc",
     "version": "1.0.0",
-    "description": "Inter-process communication for Claude Code sessions via tmux",
+    "description": "Inter-process communication for AI agent sessions via tmux",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "bin": {
-        "claude-ipc": "./dist/cli.js"
+        "agent-ipc": "./dist/cli.js"
     },
     "scripts": {
         "build": "tsc",
@@ -22,11 +22,11 @@
         "check:fix": "biome check . --write"
     },
     "keywords": [
-        "claude",
+        "agent",
         "tmux",
         "ipc",
         "ai",
-        "agent"
+        "llm"
     ],
     "author": "Shane Holloman",
     "license": "MIT",

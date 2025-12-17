@@ -1,6 +1,6 @@
-# Claude IPC Patterns
+# Agent IPC Patterns
 
-Documented patterns for Claude-to-Claude communication via tmux.
+Documented patterns for agent-to-agent communication via tmux.
 
 ## The Key Discovery
 
@@ -70,7 +70,7 @@ tmux list-sessions -F '#{session_name}' | grep -E '^claude(-[0-9]+)?$'
 tmux display-message -p '#{session_name}'
 
 # Check if session exists
-tmux has-session -t claude-2 2>/dev/null && echo "exists"
+tmux has-session -t agent-2 2>/dev/null && echo "exists"
 
 # Get session info with attachment status
 tmux list-sessions -F '#{session_name}: #{session_windows} window(s) #{?session_attached,(attached),}'
@@ -82,7 +82,7 @@ tmux list-sessions -F '#{session_name}: #{session_windows} window(s) #{?session_
 #!/usr/bin/env bash
 # Example: Send message and read response
 
-TARGET="claude-2"
+TARGET="agent-2"
 MESSAGE="What is the capital of France?"
 
 # Send the message
@@ -101,8 +101,8 @@ tmux capture-pane -t "$TARGET" -p -S -20
 Both directions have been tested and confirmed working:
 
 ```
-claude  -->  claude-2  : Working
-claude  <--  claude-2  : Working
+claude  -->  agent-2  : Working
+claude  <--  agent-2  : Working
 ```
 
 Each Claude instance can:
@@ -116,15 +116,15 @@ Each Claude instance can:
 From the `claude` session, a full exchange looks like:
 
 ```bash
-# Claude sends to claude-2
-tmux send-keys -t claude-2 "Hello, I am Claude from another session. Can you hear me?"
-tmux send-keys -t claude-2 C-Enter
+# Claude sends to agent-2
+tmux send-keys -t agent-2 "Hello, I am Claude from another session. Can you hear me?"
+tmux send-keys -t agent-2 C-Enter
 
 # Wait for response
 sleep 8
 
-# Read what claude-2 said
-tmux capture-pane -t claude-2 -p -S -30
+# Read what agent-2 said
+tmux capture-pane -t agent-2 -p -S -30
 ```
 
 Output shows the conversation:
@@ -209,7 +209,7 @@ Delegate a task to a specific agent:
 
 ```typescript
 ipc.handoffTask(
-  "claude-2",
+  "agent-2",
   "Review the protocol implementation",
   "New protocol methods added to ipc.ts - check for edge cases",
   "medium"
@@ -285,7 +285,7 @@ Use heartbeats to:
 
 Completed:
 
-- [x] TypeScript wrapper (ClaudeIPC class)
+- [x] TypeScript wrapper (AgentIPC class)
 - [x] CLI interface (commander.js)
 - [x] Response polling with timeout (sendAndWait)
 - [x] Structured logging (pino)

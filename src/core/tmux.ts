@@ -84,16 +84,16 @@ export const tmux = {
     },
 
     /**
-     * List Claude sessions
+     * List agent sessions
      * Matches:
-     * - claude (base)
-     * - claude-1, claude-2 (numbered, for human-interactive)
-     * - claude-dev, claude-tester (role-based, for inter-agent)
-     * - claude-tester-2 (role-based with instance number)
+     * - agent (base)
+     * - agent-1, agent-2 (numbered, for human-interactive)
+     * - agent-dev, agent-tester (role-based, for inter-agent)
+     * - agent-tester-2 (role-based with instance number)
      */
-    listClaudeSessions(): TmuxSession[] {
+    listAgentSessions(): TmuxSession[] {
         return this.listSessions().filter((s) =>
-            /^claude(-\d+|-[a-z]+(-\d+)?)?$/.test(s.name),
+            /^agent(-\d+|-[a-z]+(-\d+)?)?$/.test(s.name),
         );
     },
 
@@ -115,7 +115,7 @@ export const tmux = {
     },
 
     /**
-     * Send Ctrl+Enter to submit in Claude TUI
+     * Send Ctrl+Enter to submit in agent TUI
      * Small delay ensures paste completes before submit
      */
     sendSubmit(target: string): void {
@@ -136,10 +136,10 @@ export const tmux = {
     },
 
     /**
-     * Create a new session running claude
+     * Create a new session running an agent
      */
-    createClaudeSession(name: string): void {
-        execSync(`tmux new-session -d -s '${shellEscape(name)}' claude`);
+    createAgentSession(name: string, command = "claude"): void {
+        execSync(`tmux new-session -d -s '${shellEscape(name)}' ${command}`);
     },
 
     /**

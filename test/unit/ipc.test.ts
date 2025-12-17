@@ -1,16 +1,16 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { ClaudeIPC } from "../../src/core/ipc.js";
+import { AgentIPC } from "../../src/core/ipc.js";
 import {
     extractProtocolMessages,
     isProtocolMessage,
     parseProtocolMessage,
 } from "../../src/core/protocol.js";
 
-describe("ClaudeIPC", () => {
-    let ipc: ClaudeIPC;
+describe("AgentIPC", () => {
+    let ipc: AgentIPC;
 
     beforeAll(() => {
-        ipc = new ClaudeIPC("test-runner");
+        ipc = new AgentIPC("test-runner");
     });
 
     describe("read()", () => {
@@ -84,13 +84,13 @@ describe("ClaudeIPC", () => {
 describe("Protocol Parsing", () => {
     describe("parseProtocolMessage()", () => {
         it("parses a status_update message", () => {
-            const text = `[PROTOCOL:STATUS_UPDATE] from claude-dev at 2025-12-17T08:00:00Z seq=1
+            const text = `[PROTOCOL:STATUS_UPDATE] from agent-dev at 2025-12-17T08:00:00Z seq=1
 Status: working
 Task: Testing the parser`;
             const msg = parseProtocolMessage(text);
             expect(msg).not.toBeNull();
             expect(msg?.type).toBe("status_update");
-            expect(msg?.from).toBe("claude-dev");
+            expect(msg?.from).toBe("agent-dev");
             expect(msg?.seq).toBe(1);
             if (msg && "status" in msg) {
                 expect(msg.status).toBe("working");
@@ -99,7 +99,7 @@ Task: Testing the parser`;
         });
 
         it("parses a heartbeat message", () => {
-            const text = `[PROTOCOL:HEARTBEAT] from claude-tester at 2025-12-17T08:00:00Z seq=5
+            const text = `[PROTOCOL:HEARTBEAT] from agent-tester at 2025-12-17T08:00:00Z seq=5
 Status: alive
 Task: Monitoring`;
             const msg = parseProtocolMessage(text);
@@ -112,7 +112,7 @@ Task: Monitoring`;
         });
 
         it("parses a task_handoff message", () => {
-            const text = `[PROTOCOL:TASK_HANDOFF] from claude-dev at 2025-12-17T08:00:00Z seq=3
+            const text = `[PROTOCOL:TASK_HANDOFF] from agent-dev at 2025-12-17T08:00:00Z seq=3
 Task: Review the login module
 Priority: high
 Context: User reported auth issues`;
@@ -127,7 +127,7 @@ Context: User reported auth issues`;
         });
 
         it("parses an error_notice message", () => {
-            const text = `[PROTOCOL:ERROR_NOTICE] from claude-dev at 2025-12-17T08:00:00Z seq=2
+            const text = `[PROTOCOL:ERROR_NOTICE] from agent-dev at 2025-12-17T08:00:00Z seq=2
 Error: Build failed with 3 errors
 Recoverable: true
 Needs assistance: false`;
@@ -142,7 +142,7 @@ Needs assistance: false`;
         });
 
         it("parses a context_compaction message", () => {
-            const text = `[PROTOCOL:CONTEXT_COMPACTION] from claude-dev at 2025-12-17T08:00:00Z seq=4
+            const text = `[PROTOCOL:CONTEXT_COMPACTION] from agent-dev at 2025-12-17T08:00:00Z seq=4
 Summary: Completed initial setup and tests
 Retained: IPC protocol, tmux integration, logging system
 Current task: Implementing new features`;
@@ -162,7 +162,7 @@ Current task: Implementing new features`;
         });
 
         it("parses messages without sequence numbers", () => {
-            const text = `[PROTOCOL:HEARTBEAT] from claude-dev at 2025-12-17T08:00:00Z
+            const text = `[PROTOCOL:HEARTBEAT] from agent-dev at 2025-12-17T08:00:00Z
 Status: idle`;
             const msg = parseProtocolMessage(text);
             expect(msg).not.toBeNull();
@@ -203,10 +203,10 @@ Status: idle`;
     describe("extractProtocolMessages()", () => {
         it("extracts multiple messages from text", () => {
             const text = `Some preamble text
-[PROTOCOL:HEARTBEAT] from claude-dev at 2025-12-17T08:00:00Z seq=1
+[PROTOCOL:HEARTBEAT] from agent-dev at 2025-12-17T08:00:00Z seq=1
 Status: alive
 
-[PROTOCOL:STATUS_UPDATE] from claude-dev at 2025-12-17T08:00:01Z seq=2
+[PROTOCOL:STATUS_UPDATE] from agent-dev at 2025-12-17T08:00:01Z seq=2
 Status: working
 Task: Building`;
             const messages = extractProtocolMessages(text);

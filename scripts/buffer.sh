@@ -8,7 +8,7 @@ set -euo pipefail
 
 ACTION="${1:-}"
 MESSAGE="${2:-}"
-BUFFER_NAME="claude-ipc"
+BUFFER_NAME="agent-ipc"
 
 case "$ACTION" in
     set)

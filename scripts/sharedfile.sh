@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-INBOX="/tmp/claude-ipc-inbox.txt"
+INBOX="/tmp/agent-ipc-inbox.txt"
 ACTION="${1:-}"
 MESSAGE="${2:-}"
 

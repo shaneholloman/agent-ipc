@@ -12,13 +12,13 @@ Project-specific instructions for Claude instances working on this codebase.
 
 1. **Check for session state**: Read `logs/.session-<tmux_session>` if it exists (created by startup hook)
 
-   For example, `logs/.session-claude-dev` or `logs/.session-claude-tester`. Each IPC session gets its own state file to avoid collisions when running multiple agents.
+   For example, `logs/.session-agent-dev` or `logs/.session-agent-tester`. Each IPC session gets its own state file to avoid collisions when running multiple agents.
 
    The state file contains:
 
    ```json
    {
-     "tmux_session": "claude-dev",
+     "tmux_session": "agent-dev",
      "role": "developer",
      "ipc_mode": true,
      "descriptor": "brave-amber-fox",
@@ -32,9 +32,9 @@ Project-specific instructions for Claude instances working on this codebase.
 2. **Or detect via tmux**: Run `tmux display-message -p '#{session_name}'`
 
 3. **Role assignment**:
-   - `claude-dev` or `claude-dev-N` → Developer. Read `prompts/developer.md` and `prompts/protocol.md`
-   - `claude-tester` or `claude-tester-N` → Tester. Read `prompts/tester.md` and `prompts/protocol.md`
-   - `claude-N` (numbered) or not in tmux → Human-interactive mode, no IPC protocol
+   - `agent-dev` or `agent-dev-N` → Developer. Read `prompts/developer.md` and `prompts/protocol.md`
+   - `agent-tester` or `agent-tester-N` → Tester. Read `prompts/tester.md` and `prompts/protocol.md`
+   - `agent-N` (numbered) or not in tmux → Human-interactive mode, no IPC protocol
 
 4. **Announce readiness**: Display a clear status announcement (see format below)
 
@@ -56,8 +56,8 @@ AGENT IPC SESSION INITIALIZED
 | Log File   | logs/<descriptor>.jsonl |
 
 This is a multi-agent peer programming session. Other agents may join:
-- Developer (claude-dev): Implements features, drives development
-- Tester (claude-tester): Reviews code, validates changes
+- Developer (agent-dev): Implements features, drives development
+- Tester (agent-tester): Reviews code, validates changes
 
 Ready for <development/testing> tasks.
 ```
@@ -92,14 +92,14 @@ Hooks should only activate in IPC mode. Detection logic:
 ```bash
 SESSION=$(tmux display-message -p '#{session_name}' 2>/dev/null)
 [[ -z "$SESSION" ]] && exit 0                    # Not in tmux
-[[ "$SESSION" =~ ^claude-[0-9]+$ ]] && exit 0    # Human session
-# Proceed - this is an IPC session (claude-dev, claude-tester, etc.)
+[[ "$SESSION" =~ ^agent-[0-9]+$ ]] && exit 0    # Human session
+# Proceed - this is an IPC session (agent-dev, agent-tester, etc.)
 ```
 
 Session naming convention:
 
-- `claude-N` (numbered) - Human-interactive sessions, no IPC hooks
-- `claude-<role>` (named) - IPC sessions, hooks active
+- `agent-N` (numbered) - Human-interactive sessions, no IPC hooks
+- `agent-<role>` (named) - IPC sessions, hooks active
 
 ## Shell Aliases
 
@@ -107,14 +107,14 @@ This project uses tmux aliases defined in `docs/tmux-aliases.md`. Users must ins
 
 | Alias        | Command                                  |
 | ------------ | ---------------------------------------- |
-| `cs`         | Start human session (claude-N)           |
-| `csd`        | Start IPC Developer session (claude-dev) |
-| `cst`        | Start IPC Tester session (claude-tester) |
-| `csk <name>` | Kill a specific session                  |
-| `csl`        | List all Claude sessions                 |
-| `csa`        | Attach to session                        |
-| `cso`        | Kill others, keep current                |
-| `csx`        | Exterminate ALL sessions                 |
+| `as`         | Start human session (agent-N)            |
+| `asd`        | Start IPC Developer session (agent-dev)  |
+| `ast`        | Start IPC Tester session (agent-tester)  |
+| `ask <name>` | Kill a specific session                  |
+| `asl`        | List all agent sessions                  |
+| `asa`        | Attach to session                        |
+| `aso`        | Kill others, keep current                |
+| `asx`        | Exterminate ALL sessions                 |
 
 ### Shane's Setup
 
@@ -150,7 +150,7 @@ The IPC system handles session lifecycle automatically via a two-stage initializ
 
 When `csd` or `cst` alias runs:
 
-1. **tmux session created** with role-based name (`claude-dev`, `claude-tester`)
+1. **tmux session created** with role-based name (`agent-dev`, `agent-tester`)
 2. **Claude starts** in the tmux session
 3. **SessionStart hook fires** → detects tmux session → writes `logs/.session-<name>` with role and persistent descriptor
 4. **Context injected** → CLAUDE.md instructions appear in system reminders
