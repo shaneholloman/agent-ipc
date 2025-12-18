@@ -1,9 +1,14 @@
 #!/usr/bin/env node
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import { AgentIPC } from "./core/ipc.js";
 import { extractProtocolMessages } from "./core/protocol.js";
 import logger from "./utils/logger.js";
 import { SessionLogger } from "./utils/logger-session.js";
+
+// Load package.json for version
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json") as { version: string };
 
 // CLI commands are stateless - disable logging to avoid descriptor spam
 const ipc = new AgentIPC({ disableLogging: true });
@@ -13,7 +18,7 @@ const program = new Command();
 program
     .name("agent-ipc")
     .description("Inter-process communication for AI agent sessions via tmux")
-    .version("1.0.0")
+    .version(pkg.version)
     .addHelpText(
         "after",
         `
