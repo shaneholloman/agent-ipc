@@ -4,8 +4,8 @@ This document defines communication protocols for AI agents collaborating on `ag
 
 ## Roles
 
-| Role      | Session Name                 | Responsibility                                |
-| --------- | ---------------------------- | --------------------------------------------- |
+| Role      | Session Name                | Responsibility                                |
+| --------- | --------------------------- | --------------------------------------------- |
 | Developer | `agent-dev`                 | Implements features, drives development       |
 | Tester    | `agent-tester`              | Reviews code, validates changes, catches bugs |
 | Tester-2  | `agent-tester-2` (optional) | Parallel testing when safe                    |
